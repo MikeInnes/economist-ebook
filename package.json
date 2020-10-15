@@ -1,0 +1,20 @@
+{
+  "name": "economist",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsc && node dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "devDependencies": {
+    "typescript": "^3.9.6"
+  },
+  "dependencies": {
+    "@types/selenium-webdriver": "^4.0.9",
+    "chromedriver": "^85.0.1",
+    "selenium-webdriver": "^4.0.0-alpha.7",
+    "toml": "^3.0.0"
+  }
+}

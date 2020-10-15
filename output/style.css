@@ -1,0 +1,17 @@
+.section {
+    font-size: 500%;
+    text-align: center;
+}
+.pagebreak {
+    display: block;
+    margin-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 0;
+    page-break-after: always
+}
+img {
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+}
