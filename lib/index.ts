@@ -1,4 +1,4 @@
-import {Builder, By, Key, Button, WebDriver, WebElement} from 'selenium-webdriver';
+import {Builder, By, Key, WebDriver, WebElement} from 'selenium-webdriver';
 import toml from 'toml';
 import fs from 'fs/promises';
 import child_process from 'child_process';
@@ -42,6 +42,10 @@ async function load(driver: WebDriver, url: string) {
     await waitForLoad(driver);
 }
 
+async function exists(driver: WebDriver | WebElement, query: string) {
+    return (await driver.findElements(By.css(query))).length > 0;
+}
+
 function select(driver: WebDriver | WebElement, query: string) {
     return driver.findElement(By.css(query));
 }
@@ -51,12 +55,21 @@ function selectAll(driver: WebDriver | WebElement, query: string) {
 }
 
 async function elementText(driver: WebDriver | WebElement, query: string) {
-    try {
-        let el = await select(driver, query);
-        return await el.getText();
-    } catch (e) {
-        // TODO figure out how to check for NoSuchElementError
+    if (await exists(driver, query)) {
+        return (await select(driver, query)).getText()
+    } else {
         return '';
+    }
+}
+
+// Work around server errors
+// The page appears to load normally, and then get replaced by an error page by JS,
+// so we have to wait.
+async function loadArticle(driver: WebDriver, url: string) {
+    await load(driver, url);
+    await sleep(1);
+    if (!(await exists(driver, '.layout-article-body'))) {
+        await loadArticle(driver, url);
     }
 }
 
@@ -105,7 +118,7 @@ async function downloadImage(driver: WebDriver, query: string, file: string | nu
 }
 
 async function article(dr: WebDriver, url: string) {
-    await load(dr, url);
+    await loadArticle(dr, url);
     let headline = await elementText(dr, '.article__headline');
     let subheadline = await elementText(dr, '.article__subheadline');
     let description = await elementText(dr, '.article__description');
