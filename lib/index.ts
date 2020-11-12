@@ -62,17 +62,6 @@ async function elementText(driver: WebDriver | WebElement, query: string) {
     }
 }
 
-// Work around server errors
-// The page appears to load normally, and then get replaced by an error page by JS,
-// so we have to wait.
-async function loadArticle(driver: WebDriver, url: string) {
-    await load(driver, url);
-    await sleep(1);
-    if (!(await exists(driver, '.layout-article-body'))) {
-        await loadArticle(driver, url);
-    }
-}
-
 async function imageBase64(driver: WebDriver, src: string) {
     let dataurl: string = await driver.executeScript(`
         function toDataURL(src, callback, outputFormat) {
@@ -117,8 +106,8 @@ async function downloadImage(driver: WebDriver, query: string, file: string | nu
     return path.basename(url).replace(/\.jpg$/, '.png');
 }
 
-async function article(dr: WebDriver, url: string) {
-    await loadArticle(dr, url);
+async function getArticle(dr: WebDriver, url: string) {
+    await load(dr, url);
     let headline = await elementText(dr, '.article__headline');
     let subheadline = await elementText(dr, '.article__subheadline');
     let description = await elementText(dr, '.article__description');
@@ -143,6 +132,15 @@ async function article(dr: WebDriver, url: string) {
     await Promise.all(imgs.map(x => downloadImageURL(dr, x)));
     let content = await select(dr, '.layout-article-body').getAttribute('outerHTML');
     return {headline, subheadline, description, image, content};
+}
+
+async function article(dr: WebDriver, url: string): Promise<any> {
+    try {
+        return await getArticle(dr, url);
+    } catch (e) {
+        console.log(`Error retrieving article, retrying: ${url}`);
+        return article(dr, url);
+    }
 }
 
 async function sections(dr: WebDriver) {
