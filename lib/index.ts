@@ -198,13 +198,15 @@ async function main() {
     let dr = await new Builder().forBrowser('chrome').build();
 
     await load(dr, 'https://economist.com/');
-    try {
+    if (exists(dr, '#_evidon-banner-acceptbutton')) {
         let accept = await select(dr, '#_evidon-banner-acceptbutton');
         await accept.click();
-    } catch (e) {}
+    }
     await select(dr, '.ds-masthead-nav-beta__item--log-in').click();
     await waitForLoad(dr);
-    await select(dr, 'input[type=email]').sendKeys(username);
+    await select(dr, 'input[type=email]').sendKeys(username, Key.RETURN);
+    await sleep(1);
+    await waitForLoad(dr);
     await select(dr, 'input[type=password]').sendKeys(password, Key.RETURN);
     await waitForLogin(dr);
 
